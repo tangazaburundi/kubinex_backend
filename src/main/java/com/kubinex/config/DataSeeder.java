@@ -47,6 +47,6 @@ public class DataSeeder implements CommandLineRunner {
                 Une équipe créative à votre écoute, où que vous soyez, pour donner vie à vos projets les plus ambitieux.
                 """.stripIndent(), 2));
         repo.save(new SiteBlock("contact", "Contactez-nous", "Parlons de votre projet",
-                "contact@kubinex.com — +33 4 00 00 00 00 — 100% en ligne, partout dans le monde", 3));
+                "contactkubinex@gmail.com — +33 7 80 73 93 84 — 100% en ligne, partout dans le monde", 3));
     }
 }

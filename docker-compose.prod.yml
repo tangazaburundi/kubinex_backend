@@ -1,0 +1,65 @@
+name: kubinex
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kubinex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kubinex
+      POSTGRES_USER: kubinex
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - kubinex_pg_data:/var/lib/postgresql/data
+    command: postgres -c 'max_connections=200' -c 'shared_buffers=256MB'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kubinex -d kubinex"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: kubinex-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/kubinex
+      DB_USER: kubinex
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+      MAIL_HOST: ${MAIL_HOST:-smtp-relay.brevo.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM:-lemarchebdi@gmail.com}
+      MAIL_TO: ${MAIL_TO:-contactkubinex@gmail.com}
+      APP_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8084:8080"
+    volumes:
+      - kubinex_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: kubinex-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8086:80"
+
+volumes:
+  kubinex_pg_data:
+  kubinex_uploads:

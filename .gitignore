@@ -10,6 +10,11 @@ target/
 # Logs
 *.log
 
+# Env
+.env
+*.env
+docker/.env.prod
+
 # OS
 .DS_Store
 Thumbs.db
